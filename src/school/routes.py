@@ -5,7 +5,7 @@ from anyio import Path
 from fastapi import APIRouter, Depends, HTTPException, Path, Response, status
 from src.db.config import get_session
 from sqlalchemy.ext.asyncio import AsyncSession
-from .pydantic_models import CreateFeedBack, CreateSubject, GetTeachers, FeedbackWithSubject
+from .pydantic_models import CreateFeedBack, CreateSubject, GetTeachers, FeedbackWithSubject, UpdateFeedBack
 from .fb_crud import FeedbackCRUD
 from .models import User
 from src.user_auth.utils import get_current_user, required_role
@@ -60,3 +60,12 @@ async def get_feedback(db: db_dependency, user: Annotated[User, Depends(required
         raise HTTPException(content=result, status_code=status.HTTP_404_NOT_FOUND)
     return result
 
+
+@feedback_router.put("/update_feedback/{feedback_id}", status_code=status.HTTP_200_OK)
+async def update_feedback(db:db_dependency, user: Annotated[User, Depends(required_role("student"))],request_data: UpdateFeedBack,
+                          feedback_id: int = Path(gt=0)):
+    data = request_data.model_dump()
+    result = await fb_crud_class.update_feedback(db, user, feedback_id, data)
+    if result == "No Feeback found":
+        raise HTTPException(content=result, status_code=status.HTTP_404_NOT_FOUND)
+    return result

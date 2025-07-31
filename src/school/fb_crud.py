@@ -83,5 +83,26 @@ class FeedbackCRUD:
         feedbacks = result.all()
         return feedbacks
 
+    async def update_feedback(self, db: AsyncSession, user: User, feedback_id: int, update_data: dict):
+        """
+        ***Need to udpate this so that only a teacher can update only their own feedback.
+        """
+        query = select(Feedback).where(Feedback.id == feedback_id)
+        result = await db.execute(query)
+        obj = result.scalars().first()
+        if not result:
+            return "No Feeback found"
+        for key, value in update_data.items():
+            setattr(obj, key, value)
+        db.add(obj)
+        await db.commit()
+        await db.refresh(obj)
+
+        return update_data
+
+
+
+
+
 
 

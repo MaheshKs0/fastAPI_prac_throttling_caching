@@ -14,6 +14,13 @@ class CreateSubject(BaseModel):
     teacher_id: int
 
 
+class UpdateFeedBack(BaseModel):
+    student_id : int
+    subject_id: int
+    feedback_text : str
+
+
+
 #Response Models
 
 class GetTeachers(BaseModel):
