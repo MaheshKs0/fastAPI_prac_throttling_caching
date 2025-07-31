@@ -1,11 +1,11 @@
 from calendar import c
 from operator import gt
-from typing import Annotated
+from typing import Annotated, List
 from anyio import Path
 from fastapi import APIRouter, Depends, HTTPException, Path, Response, status
 from src.db.config import get_session
 from sqlalchemy.ext.asyncio import AsyncSession
-from .pydantic_models import CreateFeedBack, CreateSubject, GetTeachers
+from .pydantic_models import CreateFeedBack, CreateSubject, GetTeachers, FeedbackWithSubject
 from .fb_crud import FeedbackCRUD
 from .models import User
 from src.user_auth.utils import get_current_user, required_role
@@ -50,4 +50,13 @@ async def create_subject(db: db_dependency,user: Annotated[User, Depends(require
     if result == "Not a valid userId":
         raise HTTPException(content=result, status_code=status.HTTP_404_NOT_FOUND)
     return Response(content=result)
+
+
+@feedback_router.get("/get_feedback", status_code=status.HTTP_200_OK,response_model= list[FeedbackWithSubject],
+                     dependencies=[Depends(RateLimiter(times=5,seconds=60))])
+async def get_feedback(db: db_dependency, user: Annotated[User, Depends(required_role("student"))]):
+    result = await fb_crud_class.get_teacher_feedback(db, user)
+    if not result:
+        raise HTTPException(content=result, status_code=status.HTTP_404_NOT_FOUND)
+    return result
 

@@ -41,7 +41,19 @@ def generate_token(email, token_type):
     encoded_jwt = jwt.encode(jwt_data, SECRET_KEY, ALGORITHM)
     return encoded_jwt
 
-async def decode_token(token: str, db: db_dependency):
+def decode_token(token: str):
+    try:
+        decoded_token = jwt.decode(token, SECRET_KEY, ALGORITHM)
+    except ExpiredSignatureError:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token has expired")
+    except JWTError:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token is not valid")
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail="Some error occured")
+    return decoded_token
+
+
+async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: db_dependency):
     try:
         decoded_token = jwt.decode(token, SECRET_KEY, ALGORITHM)
         user_email = decoded_token['sub']
@@ -56,11 +68,6 @@ async def decode_token(token: str, db: db_dependency):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token is not valid")
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail="Some error occured")
-    return user
-
-
-async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)], db: db_dependency):
-    user = await decode_token(token, db)
     return user
 
 

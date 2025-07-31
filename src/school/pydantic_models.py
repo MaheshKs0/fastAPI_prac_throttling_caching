@@ -20,3 +20,13 @@ class GetTeachers(BaseModel):
     id: int
     role: str
     username: str
+
+class FeedbackWithSubject(BaseModel):
+    id: int
+    student_id: int
+    subject_name: str
+    feedback_text: str
+    date: date
+
+    class Config:
+        orm_mode = True

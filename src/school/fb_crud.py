@@ -1,5 +1,6 @@
 from ast import Sub
 from fastapi import HTTPException, status
+from sqlalchemy import and_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from .models import Feedback, Subject, User
@@ -66,3 +67,21 @@ class FeedbackCRUD:
         users = result.scalars().all()
         teachers = [user for user in users if user.role == "teacher"]
         return teachers
+
+    async def get_teacher_feedback(self, db: AsyncSession, user: User):
+        query = select(Feedback.id,
+                       Subject.name.label("subject_name"),
+                       Feedback.student_id,
+                       Feedback.feedback_text,
+                       Feedback.date
+                       ).join(Subject, Subject.id==Feedback.subject_id)
+
+        conditions = []
+        conditions.append(Feedback.student_id == user.id)
+        query = query.where(and_(*conditions))
+        result = await db.execute(query)
+        feedbacks = result.all()
+        return feedbacks
+
+
+

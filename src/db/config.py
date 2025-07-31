@@ -33,10 +33,9 @@ async def user_identifier(request: Request):
     auth_header = request.headers.get("Authorization")
     if not auth_header or not auth_header.startswith("Bearer "):
         return "anonymous"
-    token_data = auth_header[len("Bearer "):].strip()
-    user_id = token_data.sub if hasattr(token_data, "sub") else "anonymous"
-    print("in user_identifier")
-    print(auth_header, user_id, token_data.sub)
+    token = auth_header[len("Bearer "):].strip()
+    token_data = decode_token(token)
+    user_id = token_data.get('sub','anonymous')
     return user_id
 
 
