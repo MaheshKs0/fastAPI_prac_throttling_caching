@@ -91,7 +91,7 @@ class FeedbackCRUD:
         result = await db.execute(query)
         obj = result.scalars().first()
         if not result:
-            return "No Feeback found"
+            return "No Feeback found for it"
         for key, value in update_data.items():
             setattr(obj, key, value)
         db.add(obj)
