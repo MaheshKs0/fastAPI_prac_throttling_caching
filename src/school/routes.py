@@ -66,6 +66,6 @@ async def update_feedback(db:db_dependency, user: Annotated[User, Depends(requir
                           feedback_id: int = Path(gt=0)):
     data = request_data.model_dump()
     result = await fb_crud_class.update_feedback(db, user, feedback_id, data)
-    if result == "No Feeback found":
+    if result == "No Feeback found for it":
         raise HTTPException(content=result, status_code=status.HTTP_404_NOT_FOUND)
     return result
